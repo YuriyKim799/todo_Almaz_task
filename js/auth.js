@@ -4,40 +4,21 @@ const submitButton = document.querySelector(".submitBtn");
 const error = document.querySelector(".error");
 
 
-
-window.addEventListener("load", () => {
-  if(!localStorage.getItem("users")) {
-    localStorage.setItem("users", JSON.stringify([]))
-  }
-})
-
 const users = JSON.parse(localStorage.getItem("users"))
 
-submitButton.addEventListener("click", (event) => {
-  event.preventDefault();
+
+submitButton.addEventListener("click", (e) => {
+  e.preventDefault();
 
   const isUser = !!users.find(item => item.email === emailInput.value)
-  
+
   if(emailInput.value !== "" && passwordInput.value !== "") {
     if(isUser) {
-      error.innerHTML = "Пользователь с таким email уже существует!"
+      localStorage.setItem("isAuth", "true")
+      window.open("../index.html", "_self")
     } else {
-      const allUsers = JSON.parse(localStorage.getItem("users"));
-
-      localStorage.setItem("users", 
-        JSON.stringify(
-            [ 
-              ...allUsers, 
-              {email:emailInput.value, password: passwordInput.value}
-            ]
-        )
-      )
-
-      window.open("../auth.html", "_self")
+      error.innerHTML = "Данный пользователь не найден!"
     }
-
-    emailInput.value = ""
-    passwordInput.value = ""
   } else {
     error.innerHTML = "Все поля обьязательны к заполнению!"
   }
