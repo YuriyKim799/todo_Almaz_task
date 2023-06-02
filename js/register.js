@@ -1,52 +1,49 @@
-const emailInput = document.querySelector(".email");
-const passwordInput = document.querySelector(".password");
-const submitButton = document.querySelector(".submitBtn");
-const error = document.querySelector(".error");
-
+const inpEmailEl = document.querySelector(".email");
+const inpPassEl = document.querySelector(".password");
+const submitBtnEl = document.querySelector(".submitBtn");
+const errorEl = document.querySelector(".error");
 
 
 window.addEventListener("load", () => {
-  if(!localStorage.getItem("users")) {
-    localStorage.setItem("users", JSON.stringify([]))
+  if (localStorage.getItem("isAuth") === "true") {
+    window.open("./index.html", "_self");
+  };
+  if (!localStorage.getItem("users")) {
+    localStorage.setItem("users", JSON.stringify([]));
   }
-})
+});
 
-const users = JSON.parse(localStorage.getItem("users"))
+const users = JSON.parse(localStorage.getItem("users"));
 
-submitButton.addEventListener("click", (event) => {
+submitBtnEl.addEventListener('click', event => {
+  let user = {};
   event.preventDefault();
-
-  const isUser = !!users.find(item => item.email === emailInput.value)
-  
-  if(emailInput.value !== "" && passwordInput.value !== "") {
-    if(isUser) {
-      error.innerHTML = "Пользователь с таким email уже существует!"
-    } else {
-      const allUsers = JSON.parse(localStorage.getItem("users"));
-
-      localStorage.setItem("users", 
-        JSON.stringify(
-            [ 
-              ...allUsers, 
-              {email:emailInput.value, password: passwordInput.value}
-            ]
-        )
-      )
-
-      window.open("../auth.html", "_self")
-    }
-
-    emailInput.value = ""
-    passwordInput.value = ""
+  if (!inpEmailEl.value || !inpPassEl.value) {
+    errorEl.innerHTML = 'Все поля должны быть заполнены';
+    return;
   } else {
-    error.innerHTML = "Все поля обьязательны к заполнению!"
+    errorEl.style.color = "green";
+    errorEl.innerHTML = "Пользователь успешно зарегестрирован, ожидайте три секунды, вас переведет на страницу авторизации";
+    setTimeout(() => {
+      window.open("./auth.html", "_self");
+    }, 3000)
+    setNewUser();
   }
-})
 
+  function setNewUser() {
+    user.login = inpEmailEl.value;
+    user.password = inpPassEl.value;
+    for (let user of users) {
+      if (user.login === inpEmailEl.value) {
+        errorEl.innerHTML = 'такой логин уже используется';
+        return;
+      } else {
 
-
-window.addEventListener("load", () => {
-  if(localStorage.getItem("isAuth") === "true") {
-    window.open("../index.html", "_self")
+      }
+    }
+    users.push(user);
+    inpEmailEl.value = '';
+    inpPassEl.value = '';
   }
-})
+  localStorage.setItem('users', JSON.stringify(users));
+});

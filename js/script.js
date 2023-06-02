@@ -1,178 +1,71 @@
-
-
-// const search = document.querySelector('.search')
-
-
-// search.addEventListener("input", (event) => {
-//     const value = event.target.value;
-
-//     if(value === "Alex") {
-//       console.log("Exsist ALex")
-//     } else if (value === "Boots") {
-//       console.log("Boots")
-//     }
-// })
-
-// const select = document.querySelector('.select')
-
-// select.addEventListener("change", (event) => {
-//   const value = event.target.value;
-//   const body = document.body;
-
-//   if(value === "dark") {
-//     body.style.background = "black"
-//   } else {
-//     body.style.background = "gold"
-//   }
-// })
-
-
-
-// const localDB = localStorage.getItem("Surpise")
-
-// const data = [
-//   {
-//     name:"Alex",
-//     age:15
-//   },
-//   {
-//     name:"Alex",
-//     age:15
-//   },
-// ]
-
-
-// localStorage.setItem("name", JSON.stringify(data))
-
-// const name = localStorage.getItem("name")
-
-// console.log(name)
-
-
-
-
+const titleInp = document.querySelector('.title');
+const descInp = document.querySelector('.description');
+const imageInp = document.querySelector('.image');
+const rowEl = document.querySelector('.row');
+const errorEl = document.querySelector('.error');
+const formEl = document.querySelector('form');
+const btnSignOut = document.querySelector('.signOut');
 
 window.addEventListener("load", () => {
-  if(localStorage.getItem("isAuth") === "false") {
-    window.open("../register.html", "_self")
+  if (localStorage.getItem("isAuth") === "false") {
+    window.open("./register.html", "_self");
+  };
+  if (!localStorage.getItem("todoList")) {
+    localStorage.setItem("todoList", JSON.stringify([]));
   }
-})
+  renderOnPage(todoList);
+});
 
-const signOut = document.querySelector(".signOut")
+const todoList = JSON.parse(localStorage.getItem("todoList"));
 
-signOut.addEventListener("click" , () => {
-  localStorage.setItem("isAuth", "false")
-  window.open("../register.html", "_self")
-})
-
-
-const title = document.querySelector(".title")
-const description = document.querySelector(".description")
-const image = document.querySelector('.image')
-const addTodo = document.querySelector(".addTodo")
-const error = document.querySelector(".error")
-const row = document.querySelector(".row")
-
-
-window.addEventListener("load", () => {
-  if(!localStorage.getItem("todo")) {
-    localStorage.setItem("todo", JSON.stringify([]))
-  }else {
-    const todo = JSON.parse(localStorage.getItem("todo"))
-
-    const todosWithID = todo.map((item, index) => {
-      return {...item, id: index }
-    })
-
-    localStorage.setItem("todo", JSON.stringify(todosWithID))
-
-    const newTodo = JSON.parse(localStorage.getItem("todo"))
-
-    card(newTodo)
-  }
-})
-
-addTodo.addEventListener("click" , (event) => {
+formEl.addEventListener('submit', event => {
   event.preventDefault();
-  
-  if(title.value !== "" && description.value !== "" && image.value !== "") {
-    const data = {
-      title: title.value,
-      description:description.value,
-      image:image.value
-    }
-    const todo = JSON.parse(localStorage.getItem("todo"))
+  const todoItem = {
+    title: titleInp.value,
+    desc: descInp.value,
+    img: imageInp.value,
+  };
+  todoList.push(todoItem);
+  renderOnPage(todoList);
+  localStorage.setItem('todoList', JSON.stringify(todoList));
+  formEl.reset();
+});
 
-    localStorage.setItem("todo", JSON.stringify(
-      [
-        ...todo,
-        data
-      ]
-    ))
-    window.location.reload()
-  } else {
-    error.innerHTML = "Все поля должны быть заполнены!"
-  }
-})
-
-
-
-function card(base) {
-  const template = base.map(({title, description, image, id}) => {
-    return `
-      <div class="boxes">
-        <h4>${title}</h4>
-
-        <img src=${image} alt="">
-
-        <p>
-          ${description}
-        </p>
-
-        <div class="btn_inline">
-          <button onclick="deleteTodo(${id})">
-            Delete
-          </button>
-          <button onclick="editTodo(${id})">
-            Edit
-          </button>
-        </div>
-      </div>
-    `
-  }).join(" ")
-
-  row.innerHTML = template
+const renderTodo = (el, idx) => {
+  return `<div class="boxes" id="${idx}">
+ <h4>${el.title}</h4>
+ <img src="${el.img}" alt="image">
+ <h4>${el.desc}</h4>
+ <div class="btn_inline">
+ <button>configure</button><button>delete</button>
+ </div>
+ </div>`;
 }
 
-
-
-function deleteTodo(id) {
-  const todo = JSON.parse(localStorage.getItem("todo"))
-
-  const filtered = todo.filter(item => item.id !== id)
-
-  localStorage.setItem('todo', JSON.stringify(filtered))
-
-  window.location.reload()
+const renderOnPage = (todoList) => {
+  rowEl.innerHTML = (todoList.map((el, idx) => renderTodo(el, idx))).join('');
 }
 
-
-
-function editTodo(id) {
-  const todo = JSON.parse(localStorage.getItem("todo"))
-
-  const changes = todo.map(item => {
-    if(item.id === id) {
-      return {
-        title: prompt("Title", item.title),
-        description: prompt("Description", item.description),
-        image: prompt("Image", item.image)
+rowEl.addEventListener('click', event => {
+  let currEl = +event.target.closest('.boxes').getAttribute('id');
+  if (event.target.textContent === 'delete') {
+    todoList.splice(currEl, 1);
+    localStorage.setItem('todoList', JSON.stringify(todoList));
+    event.target.closest('.boxes').remove();
+    renderOnPage(todoList);
+  } else if (event.target.textContent === 'configure') {
+    todoList.find((el, idx) => {
+      if (idx === currEl) {
+        el.title = prompt('Enter new value');
+        el.desc = prompt('Enter new value');
+        localStorage.setItem('todoList', JSON.stringify(todoList));
+        renderOnPage(todoList);
       }
-    } else {
-      return item
-    }
-  })
+    })
+  }
+});
 
-  localStorage.setItem("todo", JSON.stringify(changes))
-  window.location.reload()
-}
+btnSignOut.addEventListener('click', () => {
+  localStorage.setItem("isAuth", "false");
+  window.open("./register.html", "_self");
+});
